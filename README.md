@@ -1,4 +1,4 @@
-# Building a Smart City Real-time Data pipeline project
+# Building a Smart House Real-time Data pipeline project
 
 In this project, we use data and technology to improve urban infrastructure and services. By collecting and analyzing data 
 on things like traffic, emergencies, weather information, and other statistical information, we aim to enhance urban livin
