@@ -64,3 +64,6 @@ on things like traffic, emergencies, weather information, and other statistical 
 5. Run kafka_main.py help of Docker
 
 6. Run Spark_main.py help of Docker
+
+7. Now the Data Storge in S3
+ 
