@@ -14,30 +14,19 @@ LONGITUDE_INCREMENT = (BHOPAL_COORDINATES['longitude'] - INDORE_COORDINATES['lon
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVER', 'localhost:9092')
 VEHICLE_TOPIC = os.getenv('VEHICLE_TOPIC', 'vehicle_data')
-GPS_TOPIC = os.getenv('GPS_TOPIC', 'gps_data')
-WEATHER_TOPIC = os.getenv('WEATHER_TOPIC', 'weather_data')
-EMERGENCY_TOPIC = os.getenv('EMERGENCY_TOPIC', 'emergency_incident_data')
+ENVIRONMENTAL_TOPIC = os.getenv('ENVIRONMENTAL_TOPIC', 'environmental_data')
+VOICE_COMMANDS_TOPIC = os.getenv('VOICE_COMMANDS_TOPIC', 'voice_commands_data')
+CAMERA_TOPIC = os.getenv('CAMERA_TOPIC', 'camera_data')
 
-def get_next_time():
-    global start_time
+
+def get_next_time(start_time):
     start_time += timedelta(seconds=random.randint(30, 60))  # update frequency
     return start_time
 
-def generate_gps_data(device_id, timestamp, vehicle_type='private'):
+def generate_Environmental_Monitoring_data(device_id, timestamp):
     return {
         'id': str(uuid.uuid4()),
         'deviceId': device_id,
-        'timestamp': timestamp,
-        'speed': random.uniform(0, 40),  # km/h
-        'direction': 'North-East',
-        'vehicleType': vehicle_type
-    }
-
-def generate_weather_data(device_id, timestamp, location):
-    return {
-        'id': str(uuid.uuid4()),
-        'deviceId': device_id,
-        'location': location,
         'timestamp': timestamp,
         'temperature': random.uniform(-5, 26),
         'weatherCondition': random.choice(['Sunny', 'Cloudy', 'Rain', 'Snow']),
@@ -47,21 +36,24 @@ def generate_weather_data(device_id, timestamp, location):
         'airQualityIndex': random.uniform(0, 500)  # AQL Value goes here
     }
 
-def generate_emergency_incident_data(device_id, timestamp, location):
+def generate_camera_data(device_id, timestamp, camera_id):
+    return {
+        'id': uuid.uuid4(),
+        'deviceId': device_id,
+        'cameraId': camera_id,
+        'timestamp': timestamp,
+        'snapshot': 'Base64EncodedString'
+    }
+
+def generate_voice_commands(device_id, timestamp, num_commands):
     return {
         'id': str(uuid.uuid4()),
         'deviceId': device_id,
-        'incidentId': str(uuid.uuid4()),
-        'type': random.choice(['Accident', 'Fire', 'Medical', 'Police', 'None']),
         'timestamp': timestamp,
-        'location': location,
-        'status': random.choice(['Active', 'Resolved']),
-        'description': 'Description of the incident'
-    }
+        'command': random.choice(['Turn on lights', 'Increase volume', 'Pause music', 'open the door', 'Close window', 'Turn on AC', 'Turn off TV']),
+    } 
 
-def simulate_vehicle_movement():
-    global start_location
-
+def simulate_vehicle_movement(start_location):
     start_location['latitude'] += LATITUDE_INCREMENT
     start_location['longitude'] += LONGITUDE_INCREMENT
 
@@ -74,12 +66,13 @@ def simulate_vehicle_movement():
 
     return start_location
 
-def generate_vehicle_data(device_id):
-    location = simulate_vehicle_movement()
+def generate_vehicle_data(device_id, start_time, start_location):
+    start_time = get_next_time(start_time)
+    location = simulate_vehicle_movement(start_location)
     return {
         'id': str(uuid.uuid4()),
         'deviceId': device_id,
-        'timestamp': get_next_time().isoformat(),
+        'timestamp': start_time.isoformat(),
         'location': (location['latitude'], location['longitude']),
         'speed': random.uniform(10, 40),
         'direction': 'North-East',
@@ -110,12 +103,13 @@ def produce_data_to_kafka(producer, topic, data):
     producer.flush()
 
 def simulate_journey(producer, device_id):
+    start_time = datetime.now()
+    start_location = INDORE_COORDINATES.copy()
     while True:
-        vehicle_data = generate_vehicle_data(device_id)
-        gps_data = generate_gps_data(device_id, vehicle_data['timestamp'])
-        weather_data = generate_weather_data(device_id, vehicle_data['timestamp'], vehicle_data['location'])
-        emergency_incident_data = generate_emergency_incident_data(device_id, vehicle_data['timestamp'],
-                                                                   vehicle_data['location'])
+        vehicle_data = generate_vehicle_data(device_id, start_time, start_location)
+        environmental_data = generate_Environmental_Monitoring_data(device_id, vehicle_data['timestamp'])
+        voice_commands_data = generate_voice_commands(device_id, vehicle_data['timestamp'], 5)  # Example: generate 5 voice commands
+        camera_data = generate_camera_data(device_id, vehicle_data['timestamp'], 1)  # Example: generate camera data for 1 camera
 
         if vehicle_data['location'][0] >= BHOPAL_COORDINATES['latitude'] \
                 and vehicle_data['location'][1] >= BHOPAL_COORDINATES['longitude']:
@@ -123,24 +117,21 @@ def simulate_journey(producer, device_id):
             break
 
         produce_data_to_kafka(producer, VEHICLE_TOPIC, vehicle_data)
-        produce_data_to_kafka(producer, GPS_TOPIC, gps_data)
-        produce_data_to_kafka(producer, WEATHER_TOPIC, weather_data)
-        produce_data_to_kafka(producer, EMERGENCY_TOPIC, emergency_incident_data)
+        produce_data_to_kafka(producer, ENVIRONMENTAL_TOPIC, environmental_data)
+        produce_data_to_kafka(producer, VOICE_COMMANDS_TOPIC, voice_commands_data)
+        produce_data_to_kafka(producer, CAMERA_TOPIC, camera_data)
 
         time.sleep(25)
 
 if __name__ == '__main__':
     producer_config = {
-        'bootstrap.servers': 'localhost:9092',
+        'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
         'client.id': 'python-producer'
     }
     producer = SerializingProducer(producer_config)
 
-    start_time = datetime.now()
-    start_location = INDORE_COORDINATES.copy()
-
     try:
-        simulate_journey(producer, 'vehicle-Pratik_Mahajan')
+        simulate_journey(producer, 'Pratik_Mahajan')
 
     except KeyboardInterrupt:
         print('Simulation ended by the user')
