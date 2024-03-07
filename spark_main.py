@@ -8,7 +8,7 @@ configuration = {
 }
 
 def main():
-    spark = SparkSession.builder.appName("SmartCityStreaming") \
+    spark = SparkSession.builder.appName("SmartHouseStreaming") \
         .config("spark.jars.packages",
                 "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0,"
                 "org.apache.hadoop:hadoop-aws:3.3.1,"
@@ -35,19 +35,16 @@ def main():
         StructField("fuelType", StringType(), True),
     ])
 
-    gpsSchema = StructType([
+    voiceSchema = StructType([
         StructField("id", StringType(), True),
         StructField("deviceId", StringType(), True),
         StructField("timestamp", TimestampType(), True),
-        StructField("speed", DoubleType(), True),
-        StructField("direction", StringType(), True),
-        StructField("vehicleType", StringType(), True)
+        StructField("command", StringType(), True)
     ])
 
-    weatherSchema = StructType([
+    environmentalSchema = StructType([
         StructField("id", StringType(), True),
         StructField("deviceId", StringType(), True),
-        StructField("location", StringType(), True),
         StructField("timestamp", TimestampType(), True),
         StructField("temperature", DoubleType(), True),
         StructField("weatherCondition", StringType(), True),
@@ -57,15 +54,12 @@ def main():
         StructField("airQualityIndex", DoubleType(), True),
     ])
 
-    emergencySchema = StructType([
+    cameraSchema = StructType([
         StructField("id", StringType(), True),
         StructField("deviceId", StringType(), True),
-        StructField("incidentId", StringType(), True),
-        StructField("type", StringType(), True),
+        StructField("cameraId", StringType(), True),
         StructField("timestamp", TimestampType(), True),
-        StructField("location", StringType(), True),
-        StructField("status", StringType(), True),
-        StructField("description", StringType(), True),
+        StructField("snapshot", StringType(), True)
     ])
 
     def read_kafka_topic(topic, schema):
@@ -90,20 +84,20 @@ def main():
                 .start())
 
     vehicleDF = read_kafka_topic('vehicle_data', vehicleSchema).alias('vehicle')
-    gpsDF = read_kafka_topic('gps_data', gpsSchema).alias('gps')
-    weatherDF = read_kafka_topic('weather_data', weatherSchema).alias('weather')
-    emergencyDF = read_kafka_topic('emergency_incident_data', emergencySchema).alias('emergency')
+    environmentalDF = read_kafka_topic('environmental_data', environmentalSchema).alias('environmental')
+    voiceDF = read_kafka_topic('voice_commands_data', voiceSchema).alias('voice')
+    cameraDF = read_kafka_topic('camera_data', cameraSchema).alias('camera')
 
     query1 = streamWriter(vehicleDF, 's3a://bucket-Name/checkpoints/vehicle_data',
                           's3a://bucket-Name/data/vehicle_data')
-    query2 = streamWriter(gpsDF, 's3a://bucket-Name/checkpoints/gps_data',
-                          's3a://bucket-Name/data/gps_data')
-    query3 = streamWriter(weatherDF, 's3a://bucket-Name/checkpoints/weather_data',
-                          's3a://bucket-Name/data/weather_data')
-    query4 = streamWriter(emergencyDF, 's3a://bucket-Name/checkpoints/emergency_data',
-                          's3a://bucket-Name/data/emergency_data')
+    query2 = streamWriter(environmentalDF, 's3a://bucket-Name/checkpoints/environmental_data',
+                          's3a://bucket-Name/data/environmental_data')
+    query3 = streamWriter(voiceDF, 's3a://bucket-Name/checkpoints/voice_commands_data',
+                          's3a://bucket-Name/data/voice_commands_data')
+    query4 = streamWriter(cameraDF, 's3a://bucket-Name/checkpoints/camera_data',
+                          's3a://bucket-Name/data/camera_data')
 
-    query4 = spark.streams.awaitAnyTermination()
+    spark.streams.awaitAnyTermination()
 
 if __name__ == "__main__":
     main()
