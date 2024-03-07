@@ -1,13 +1,13 @@
 # Building a Smart House Real-time Data pipeline project
 
 In this project, we use data and technology to improve urban infrastructure and services. By collecting and analyzing data 
-on things like traffic, emergencies, weather information, and other statistical information, we aim to enhance urban livin
+on IOT Devices like  vehicle information, voice commands information, camera information, Environmental information, and other statistical information.
 
 ![System Architecture](Architecture.png)
 
 ## This project leverages a powerful stack of technologies:
 
-- Apache Kafka: Kafka is used as a messaging system to facilitate real-time data streaming and communication between different components of a smart city system.
+- Apache Kafka: Kafka is used as a messaging system to facilitate real-time data streaming and communication between different components of a smart House system.
 - Apache Spark: Spark is used for real-time stream processing and data ingested from Kafka topics. .
 - Amazon S3: Scalably stores raw Smart city data.
 - AWS Glue: Catalogs and transforms data using pre-built and custom ETL jobs.
@@ -49,7 +49,7 @@ on things like traffic, emergencies, weather information, and other statistical 
 1. **Clone the Repository:**
 
    ```bash
-   git clone [https://github.com/pratikm17/Building-a-Smart-City-real-time-data-Pipeline-Project.git](https://github.com/pratikm17/Building-a-Smart-City-real-time-data-Pipeline-Project.git)
+   git clone [https://github.com/pratikm17/Building-a-Smart-House-real-time-data-Pipeline-Project.git](https://github.com/pratikm17/Building-a-Smart-House-real-time-data-Pipeline-Project.git)
    ```
 
 2. **Configure Credentials:**
@@ -59,11 +59,13 @@ on things like traffic, emergencies, weather information, and other statistical 
     ```bash
     docker-compose up -d
     ```
-4. Create This Kafka topics VEHICLE_TOPIC, GPS_TOPIC, WEATHER_TOPIC, EMERGENCY_TOPIC 
+4. Create This Kafka topics VEHICLE_TOPIC, ENVIRONMENTAL_TOPIC, VOICE_COMMANDS_TOPIC, CAMERA_TOPIC 
 
 5. Run kafka_main.py help of Docker
 
 6. Run Spark_main.py help of Docker
 
 7. Now the Data Storge in S3
+
+8. To perform necessary transformations and store the data into Amazon Redshift 
  
