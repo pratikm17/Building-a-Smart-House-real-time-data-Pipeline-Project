@@ -108,8 +108,8 @@ def simulate_journey(producer, device_id):
     while True:
         vehicle_data = generate_vehicle_data(device_id, start_time, start_location)
         environmental_data = generate_Environmental_Monitoring_data(device_id, vehicle_data['timestamp'])
-        voice_commands_data = generate_voice_commands(device_id, vehicle_data['timestamp'], 5)  # Example: generate 5 voice commands
-        camera_data = generate_camera_data(device_id, vehicle_data['timestamp'], 1)  # Example: generate camera data for 1 camera
+        voice_commands_data = generate_voice_commands(device_id, vehicle_data['timestamp'], 5)  
+        camera_data = generate_camera_data(device_id, vehicle_data['timestamp'], 1)  
 
         if vehicle_data['location'][0] >= BHOPAL_COORDINATES['latitude'] \
                 and vehicle_data['location'][1] >= BHOPAL_COORDINATES['longitude']:
